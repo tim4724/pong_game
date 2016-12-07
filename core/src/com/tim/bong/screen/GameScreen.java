@@ -27,9 +27,8 @@ public class GameScreen extends BasicScreen {
         float h = w * (heightPx / widthPx);
         worlManager = new GameWorldManager(w, h);
 
-        Ball ball = worlManager.getBall();
-        touchControl = new TouchControl(worlManager.getBottomAnchor(), ball, widthPx, w);
-        aiControl = new AiControl(worlManager.getTopAnchor(), ball);
+        touchControl = new TouchControl(worlManager.getBottomAnchor(), widthPx, w);
+        aiControl = new AiControl(worlManager.getTopAnchor(), worlManager.getBall());
 
         //initialize render stuff
         /*
