@@ -6,6 +6,7 @@ import com.tim.bong.game.actor.StickAnchor;
 
 public class AiControl extends PlayerController {
     private final PublicBall ball;
+    private Vector2 temp;
 
     public AiControl(StickAnchor anchor, PublicBall ball, float width, float height) {
         super(anchor, width, height);
@@ -32,7 +33,7 @@ public class AiControl extends PlayerController {
         float ballX = ball.getX();
         float ballY = ball.getY();
         //velocity in x and y direction
-        Vector2 ballVelocity = ball.getBallVelocity();
+        Vector2 ballVelocity = ball.getBallVelocity(temp);
         float ballSpeed = ball.getSpeed();
 
         //chuck norris ai

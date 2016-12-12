@@ -71,8 +71,8 @@ public class Ball extends BasicActor implements PublicBall {
     }
 
     @Override
-    public Vector2 getBallVelocity() {
-        return getBody().getLinearVelocity();
+    public Vector2 getBallVelocity(Vector2 temp) {
+        return temp.set(getBody().getLinearVelocity());
     }
 
     @Override
