@@ -12,17 +12,17 @@ import com.tim.bong.util.convenience.MyRevoluteJointDef;
 
 public class StickAnchor extends BasicActor {
 
-    private PlayerStick myPlayer;
+    private PlayerStick playerStick;
     private RevoluteJoint joint;
 
     private final float initialAngle;
 
-    public StickAnchor(PlayerStick myPlayer) {
+    public StickAnchor(PlayerStick playerStick) {
         super();
-        setBody(createAnchorBody(myPlayer));
-        this.myPlayer = myPlayer;
-        initialAngle = myPlayer.getBody().getAngle();
-        joint = joinPlayerAndAnchor(myPlayer.getBody(), getBody());
+        setBody(createAnchorBody(playerStick));
+        this.playerStick = playerStick;
+        initialAngle = playerStick.getBody().getAngle();
+        joint = joinPlayerAndAnchor(playerStick.getBody(), getBody());
         worldService.registerUpdatable(this);
     }
 
@@ -30,18 +30,17 @@ public class StickAnchor extends BasicActor {
     public void preSimUpdate(float delta) {
         super.preSimUpdate(delta);
 
-        float angleDif = myPlayer.getBody().getAngle() - initialAngle;
+        float angleDif = playerStick.getBody().getAngle() - initialAngle;
         joint.setMotorSpeed(angleDif);
         postSimUpdate(delta);
     }
 
-    @Override
-    public void setPos(float newX, float newY) {
+    public void updatePos(float newX, float newY) {
         newY = getY();//don't change y pos
 
         //limit anchor movement in x direction
-        newX = Math.min(newX, worldService.getWidth() - myPlayer.getLen() / 2);
-        newX = Math.max(newX, myPlayer.getLen() / 2);
+        newX = Math.min(newX, worldService.getWidth() - playerStick.getLen() / 2);
+        newX = Math.max(newX, playerStick.getLen() / 2);
 
         super.setPos(newX, newY);
     }
@@ -68,8 +67,7 @@ public class StickAnchor extends BasicActor {
         return ((RevoluteJoint) worldService.createJoint(jointDef));
     }
 
-    public PlayerStick getMyPlayer() {
-        return myPlayer;//TODO: ai better without this?
+    public float getStickLen() {
+        return playerStick.getLen();
     }
-
 }

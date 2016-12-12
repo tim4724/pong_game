@@ -24,16 +24,16 @@ public abstract class BasicActor implements UpdatAble {
         return body.getPosition().y;
     }
 
-    public void setBody(Body body) {
+    void setBody(Body body) {
         this.body = body;
         body.setUserData(this);
     }
 
-    public Body getBody() {
+    Body getBody() {
         return body;
     }
 
-    public void setPos(float newX, float newY) {
+    void setPos(float newX, float newY) {
         body.setTransform(newX, newY, body.getAngle());
     }
 

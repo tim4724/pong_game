@@ -1,5 +1,6 @@
 package com.tim.bong.game.actor;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -9,7 +10,7 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.tim.bong.util.convenience.MyBodyDef;
 import com.tim.bong.util.convenience.MyFixtureDef;
 
-public class Ball extends BasicActor {
+public class Ball extends BasicActor implements PublicBall {
 
     private final static float defaultRadius = 0.8f;
     private final static float defaultSpeed = 50;
@@ -23,6 +24,10 @@ public class Ball extends BasicActor {
         speed = defaultSpeed;
         setBody(createBallBody(radius));
         setPos(worldService.getWidth() / 2, worldService.getHeight() / 2);
+    }
+
+    public void setPos(float newX, float newY) {
+        super.setPos(newX, newY);
     }
 
     public void reset() {
@@ -47,6 +52,8 @@ public class Ball extends BasicActor {
             if (dif < 0) {
                 v.set(-v.x, -v.y);
             }
+            Gdx.app.debug("Ball", "ballspeed : " + v.len() + " -> correcting speed of ball");
+            System.out.println("ballspeed : " + v.len() + " -> correcting speed of ball");
             getBody().applyLinearImpulse(v.setLength(dif), getPos(), true);
         }
     }
@@ -62,5 +69,15 @@ public class Ball extends BasicActor {
 
         circle.dispose();
         return body;
+    }
+
+    @Override
+    public Vector2 getBallVelocity() {
+        return getBody().getLinearVelocity();
+    }
+
+    @Override
+    public float getSpeed() {
+        return getBody().getLinearVelocity().len();
     }
 }

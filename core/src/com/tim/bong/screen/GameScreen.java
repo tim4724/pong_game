@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.tim.bong.game.actor.Ball;
 import com.tim.bong.game.playercontrol.AiControl;
+import com.tim.bong.game.playercontrol.PlayerController;
 import com.tim.bong.game.playercontrol.TouchControl;
 import com.tim.bong.game.world.GameWorldManager;
 import com.tim.bong.game.world.MyContactListener;
@@ -16,8 +17,7 @@ public class GameScreen extends BasicScreen {
     private ShapeRenderer shapeRenderer;
 
     private GameWorldManager worlManager;
-    private TouchControl touchControl;
-    private AiControl aiControl;
+    private PlayerController touchControl, aiControl;
 
     public GameScreen() {
         super(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), Color.BLACK);
@@ -27,8 +27,9 @@ public class GameScreen extends BasicScreen {
         float h = w * (heightPx / widthPx);
         worlManager = new GameWorldManager(w, h);
 
-        touchControl = new TouchControl(worlManager.getBottomAnchor(), widthPx, w);
-        aiControl = new AiControl(worlManager.getTopAnchor(), worlManager.getBall());
+        //player control
+        touchControl = new TouchControl(worlManager.getBottomAnchor(), widthPx, w, h);
+        aiControl = new AiControl(worlManager.getTopAnchor(), worlManager.getBall(), w, h);
 
         //initialize render stuff
         /*
