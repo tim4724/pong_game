@@ -77,6 +77,6 @@ public class Ball extends BasicActor implements PublicBall {
 
     @Override
     public float getSpeed() {
-        return getBody().getLinearVelocity().len();
+        return speed;
     }
 }
