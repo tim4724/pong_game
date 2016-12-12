@@ -24,6 +24,7 @@ public class Ball extends BasicActor implements PublicBall {
         speed = defaultSpeed;
         setBody(createBallBody(radius));
         setPos(worldService.getWidth() / 2, worldService.getHeight() / 2);
+        worldService.registerUpdatable(this);
     }
 
     public void setPos(float newX, float newY) {
@@ -36,7 +37,6 @@ public class Ball extends BasicActor implements PublicBall {
     }
 
     public void start() {
-        //Vector2 randV = new Vector2(vX, 0);
         setPos(worldService.getWidth() / 2, worldService.getHeight() / 2);
         int vY = (int) Math.pow(-1, MathUtils.random(0, 1)) * MathUtils.random(1, 2);
         Vector2 startV = new Vector2(0, vY);//TODO: new???
@@ -48,12 +48,11 @@ public class Ball extends BasicActor implements PublicBall {
         //correct the speed
         Vector2 v = getBody().getLinearVelocity();
         float dif = speed - v.len();
-        if (dif != 0 && Math.abs(dif) > 0.01f) {
+        if (dif != 0 && Math.abs(dif) > 0f) {
             if (dif < 0) {
                 v.set(-v.x, -v.y);
             }
             Gdx.app.debug("Ball", "ballspeed : " + v.len() + " -> correcting speed of ball");
-            System.out.println("ballspeed : " + v.len() + " -> correcting speed of ball");
             getBody().applyLinearImpulse(v.setLength(dif), getPos(), true);
         }
     }
