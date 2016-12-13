@@ -19,14 +19,19 @@ public class GameScreen extends BasicScreen {
     private ShapeRenderer shapeRenderer;
 
     private GameWorldManager worlManager;
-    private PlayerController controller[];
     private static float project;
+    private PlayerController controller[];
+
+    private Color goalsColor = new Color(0.886f, 0.043f, 0, 1);
+    private Color centerLineColor = new Color(0.5f, 0.5f, 0.5f, 1);
+
     private boolean touchControl = false;
+    private boolean renderDebug = false;
 
     private FPSLogger fpsLogger = new FPSLogger();
 
     public GameScreen() {
-        super(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), Color.BLACK);
+        super(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), new Color(0.03f, 0.03f, 0.03f, 1));
         float w = 30;
         float h = w * (heightPx / widthPx);
         project = widthPx / w;
@@ -43,7 +48,6 @@ public class GameScreen extends BasicScreen {
         controller[1] = new AiControl(worlManager.getTopAnchor(), worlManager.getBall(), w, h);
 
         //initialize render stuff
-
         spriteBatch = new SpriteBatch(2);
         spriteBatch.setProjectionMatrix(super.camera.combined);
 
@@ -66,7 +70,6 @@ public class GameScreen extends BasicScreen {
         controller[1].update(delta);
         worlManager.update(delta);
 
-
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         renderField();
         renderBall();
@@ -76,19 +79,20 @@ public class GameScreen extends BasicScreen {
         renderPlayers();
         spriteBatch.end();
 
-        //worlManager.renderDebug();
-
+        if(renderDebug) {
+            worlManager.renderDebug();
+        }
         fpsLogger.log();
     }
 
     private void renderField() {
-        float borderThickness = 1 * project;
+        float borderThickness = 0.8f * project;
 
-        shapeRenderer.setColor(Color.RED);
+        shapeRenderer.setColor(goalsColor);
         shapeRenderer.rectLine(0, 0, widthPx, 0, borderThickness * 2);
         shapeRenderer.rectLine(0, heightPx, widthPx, heightPx, borderThickness * 2);
 
-        shapeRenderer.setColor(Color.WHITE);
+        shapeRenderer.setColor(centerLineColor);
         shapeRenderer.rectLine(0, heightPx / 2, widthPx, heightPx / 2, borderThickness);
     }
 
@@ -98,7 +102,7 @@ public class GameScreen extends BasicScreen {
         float y = ball.getY() * project;
         float radius = ball.getRadius() * project;
 
-        shapeRenderer.setColor(Color.BLUE);
+        shapeRenderer.setColor(ball.getColor());
         shapeRenderer.circle(x, y, radius);
     }
 

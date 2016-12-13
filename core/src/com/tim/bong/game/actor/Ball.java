@@ -1,6 +1,7 @@
 package com.tim.bong.game.actor;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -19,6 +20,7 @@ public class Ball extends BasicActor implements PublicBall {
     private float a;
     private float speed;
     private boolean active;
+    private Color color;
 
     public Ball() {
         super();
@@ -27,6 +29,7 @@ public class Ball extends BasicActor implements PublicBall {
         a = 1.005f;
         setBody(createBallBody(radius));
         worldService.registerUpdatable(this);
+        color = new Color(0.145f, 0.168f, 1f, 1f);
     }
 
     public void start() {
@@ -91,5 +94,9 @@ public class Ball extends BasicActor implements PublicBall {
     @Override
     public float getSpeed() {
         return speed;
+    }
+
+    public Color getColor() {
+        return color;
     }
 }
