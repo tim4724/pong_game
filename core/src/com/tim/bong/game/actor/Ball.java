@@ -12,53 +12,58 @@ import com.tim.bong.util.convenience.MyFixtureDef;
 
 public class Ball extends BasicActor implements PublicBall {
     private final static float defaultRadius = 0.8f;
-    private final static float defaultSpeed = 50;
+    private final static float defaultSpeed = 40;
+    private final static float maimumSpeed = 60;
 
     private float radius;
+    private float a;
     private float speed;
+    private boolean active;
 
     public Ball() {
         super();
         radius = defaultRadius;
         speed = defaultSpeed;
+        a = 1.005f;
         setBody(createBallBody(radius));
-        setPos(worldService.getWidth() / 2, worldService.getHeight() / 2);
         worldService.registerUpdatable(this);
     }
 
-    public void setPos(float newX, float newY) {
-        super.setPos(newX, newY);
-    }
-
-    public void reset() {
-        speed = 0;
-    }
-
     public void start() {
-        speed = defaultSpeed;
-
         setPos(worldService.getWidth() / 2, worldService.getHeight() / 2);
 
+        speed = defaultSpeed;
         int vY = MathUtils.random(0, 1) == 0 ? 1 : -1;
         Vector2 v = getBody().getLinearVelocity().set(0, vY).setLength(speed);
         getBody().applyLinearImpulse(v, getPos(), true);
+        active = true;
+    }
+
+    public void stop() {
+        speed = 0;
+        active = false;
     }
 
     public void preSimUpdate(float delta) {
+        if (active) {
+            speed += a * delta;
+            speed = Math.min(speed, maimumSpeed);
+            Gdx.app.debug("Ball", "speed: " + speed);
+        }
         correctSpeed();
     }
 
     private void correctSpeed() {
         Vector2 v = getBody().getLinearVelocity();
         float dif = speed - v.len();
-
-        if (Math.abs(dif) > 0.001f) {
-            if (dif < 0) {
-                v.set(-v.x, -v.y);  //because set len to a negative value is not possible
-            }
-            Gdx.app.debug("Ball", "ballspeed : " + v.len() + " -> correcting speed of ball");
+        if (Math.abs(dif) > 0.0001f) {
+            if (dif < 0) v.set(-v.x, -v.y);  //because set len to a negative value is not possible
             getBody().applyLinearImpulse(v.setLength(dif), getPos(), true);
         }
+    }
+
+    public void setPos(float newX, float newY) {
+        super.setPos(newX, newY);
     }
 
     private Body createBallBody(float radius) {

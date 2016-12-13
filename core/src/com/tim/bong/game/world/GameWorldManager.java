@@ -82,7 +82,7 @@ public class GameWorldManager {
     }
 
     public void reset() {
-        ball.reset();
+        ball.stop();
         timer = System.currentTimeMillis() + 1500;
     }
 

@@ -76,7 +76,7 @@ public class GameScreen extends BasicScreen {
         renderPlayers();
         spriteBatch.end();
 
-        worlManager.renderDebug();
+        //worlManager.renderDebug();
 
         fpsLogger.log();
     }
