@@ -25,7 +25,8 @@ public class GameWorldManager {
     private StickAnchor bottomAnchor, topAnchor;
 
     private List<UpdatAble> updatAbles;
-    private int countDown;
+    private long timer;
+    private boolean running;
 
     public GameWorldManager(float width, float height) {
         WorldService.createInst(this);
@@ -49,6 +50,8 @@ public class GameWorldManager {
         topPlayer = new PlayerStick(true);
         bottomAnchor = new StickAnchor(bottomPlayer);
         topAnchor = new StickAnchor(topPlayer);
+
+        timer = -1;
     }
 
     public void start() {
@@ -59,16 +62,20 @@ public class GameWorldManager {
         for (UpdatAble updatAble : updatAbles) {
             updatAble.preSimUpdate(deltaTime);
         }
-        if (countDown != -1) {
-            countDown--;
-            //TODO: because setPos in ContactListener doesn't work
-            ball.setPos(width / 2, height / 2);
-            if (countDown == 0) {
+
+        if (timer < System.currentTimeMillis()) {
+            if(!running) {
                 start();
-                countDown = -1;
+            }
+            running = true;
+        } else {
+            if (running) {
+                running = false;
+                ball.setPos(width / 2, height / 2);
             }
         }
         doPhysicsStep(deltaTime);
+
         for (UpdatAble updatAble : updatAbles) {
             updatAble.postSimUpdate(deltaTime);
         }
@@ -76,7 +83,7 @@ public class GameWorldManager {
 
     public void reset() {
         ball.reset();
-        countDown = 60;
+        timer = System.currentTimeMillis() + 1500;
     }
 
     private void doPhysicsStep(float deltaTime) {
