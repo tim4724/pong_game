@@ -1,16 +1,22 @@
 package com.tim.bong.game.actor;
 
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import com.tim.bong.screen.GameScreen;
 import com.tim.bong.util.convenience.MyBodyDef;
 import com.tim.bong.util.convenience.MyFixtureDef;
+
 
 public class PlayerStick extends BasicActor {
     private final static float standartLen = 10f;
     private final static float standartThickness = 1.6f;
 
     private float len;
+    private final static Texture tx = new Texture("stick.png");
+    private Sprite sprite;
 
     public PlayerStick(boolean top) {
         super();
@@ -24,6 +30,16 @@ public class PlayerStick extends BasicActor {
         } else {
             getBody().setTransform(x, height - 9, -MathUtils.PI / 2);
         }
+
+        sprite = new Sprite(tx);
+        sprite.setScale(GameScreen.projectToScreen(len) / sprite.getWidth(), GameScreen.projectToScreen(getThickness()) / sprite.getHeight());
+        sprite.setOriginCenter();
+    }
+
+    public void updateSprite() {
+        sprite.setCenter(GameScreen.projectToScreen(getX()), GameScreen.projectToScreen(getY()));
+        float rot = (getAngle() + MathUtils.PI / 2) * MathUtils.radDeg;
+        sprite.setRotation(rot);
     }
 
     public float getThickness() {
@@ -55,7 +71,15 @@ public class PlayerStick extends BasicActor {
 
         box.dispose();
         circle.dispose();
+
         return body;
     }
 
+    public Sprite getSprite() {
+        return sprite;
+    }
+
+    public float getAngle() {
+        return getBody().getAngle();
+    }
 }

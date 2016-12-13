@@ -6,11 +6,14 @@ import com.tim.bong.game.actor.StickAnchor;
 
 public class AiControl extends PlayerController {
     private final PublicBall ball;
-    private Vector2 temp;
+    private final float width, height;
+    private Vector2 temp = new Vector2();
 
     public AiControl(StickAnchor anchor, PublicBall ball, float width, float height) {
-        super(anchor, width, height);
+        super(anchor);
         this.ball = ball;
+        this.width = width;
+        this.height = height;
     }
 
     /**
@@ -21,6 +24,7 @@ public class AiControl extends PlayerController {
      */
     @Override
     public void update(float deltaT) {
+        /*
         //values you can work with
         float gameWidth = width;
         float gameHeight = height;
@@ -35,9 +39,10 @@ public class AiControl extends PlayerController {
         //velocity in x and y direction
         Vector2 ballVelocity = ball.getBallVelocity(temp);
         float ballSpeed = ball.getSpeed();
+        */
 
         //chuck norris ai
         //Das Wichtigste Position des Sticks setzen!!!
-        anchor.updatePos(ball.getX(), anchor.getY());
+        anchor.updatePos(ball.getX());
     }
 }

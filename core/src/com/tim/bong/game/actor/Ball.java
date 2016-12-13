@@ -70,6 +70,10 @@ public class Ball extends BasicActor implements PublicBall {
         return body;
     }
 
+    public float getRadius() {
+        return radius;
+    }
+
     @Override
     public Vector2 getBallVelocity(Vector2 temp) {
         return temp.set(getBody().getLinearVelocity());

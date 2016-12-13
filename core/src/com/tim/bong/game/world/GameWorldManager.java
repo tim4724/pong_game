@@ -128,6 +128,14 @@ public class GameWorldManager {
         return topAnchor;
     }
 
+    public PlayerStick getBottomPlayer() {
+        return bottomPlayer;
+    }
+
+    public PlayerStick getTopPlayer() {
+        return topPlayer;
+    }
+
     public World getWorld() {
         return world;
     }

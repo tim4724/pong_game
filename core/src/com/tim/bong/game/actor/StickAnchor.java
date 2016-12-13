@@ -35,14 +35,12 @@ public class StickAnchor extends BasicActor {
         postSimUpdate(delta);
     }
 
-    public void updatePos(float newX, float newY) {
-        newY = getY();//don't change y pos
-
+    public void updatePos(float newX) {
         //limit anchor movement in x direction
         newX = Math.min(newX, worldService.getWidth() - playerStick.getLen() / 2);
         newX = Math.max(newX, playerStick.getLen() / 2);
 
-        super.setPos(newX, newY);
+        super.setPos(newX, getY());
     }
 
     private Body createAnchorBody(PlayerStick player) {
