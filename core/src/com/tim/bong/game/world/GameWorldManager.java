@@ -19,7 +19,7 @@ public class GameWorldManager {
     private World world;
     private Box2DDebugRenderer debugRenderer;
     //actors
-    private Goal goal, enemyGoal;
+    private Goal bottomGoal, topGoal;
     private Ball ball;
     private PlayerStick bottomPlayer, topPlayer;
     private StickAnchor bottomAnchor, topAnchor;
@@ -43,8 +43,8 @@ public class GameWorldManager {
         updatAbles = new ArrayList<UpdatAble>();
         createWallBodys();
         //actors
-        goal = new Goal(false);
-        enemyGoal = new Goal(true);
+        bottomGoal = new Goal(false);
+        topGoal = new Goal(true);
         ball = new Ball();
         bottomPlayer = new PlayerStick(false);
         topPlayer = new PlayerStick(true);
@@ -97,7 +97,7 @@ public class GameWorldManager {
     private void createWallBodys() {
         BodyDef bodyDef = new MyBodyDef(BodyDef.BodyType.StaticBody, 0, height / 2);
         PolygonShape groundBox = new PolygonShape();
-        groundBox.setAsBox(0, height * 1.5f);   //*1.5f just to be sure because goal is outside of the playing field
+        groundBox.setAsBox(0, height * 1.5f);   //*1.5f just to be sure because bottomGoal is outside of the playing field
 
         Body leftWall = world.createBody(bodyDef);
         bodyDef.position.set(width, height / 2);
@@ -141,6 +141,14 @@ public class GameWorldManager {
 
     public PlayerStick getTopPlayer() {
         return topPlayer;
+    }
+
+    public Goal getBottomGoal() {
+        return bottomGoal;
+    }
+
+    public Goal getTopGoal() {
+        return topGoal;
     }
 
     public World getWorld() {

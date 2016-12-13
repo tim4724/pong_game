@@ -26,9 +26,9 @@ public class PlayerStick extends BasicActor {
         float x = worldService.getWidth() / 2;
         float height = worldService.getHeight();
         if (top) {
-            getBody().setTransform(x, 9, MathUtils.PI / 2);
+            getBody().setTransform(x, 5, MathUtils.PI / 2);
         } else {
-            getBody().setTransform(x, height - 9, -MathUtils.PI / 2);
+            getBody().setTransform(x, height - 5, -MathUtils.PI / 2);
         }
 
         sprite = new Sprite(tx);

@@ -25,6 +25,10 @@ public class Goal extends BasicActor {
         score++;
     }
 
+    public int getScore() {
+        return score;
+    }
+
     private Body createGoalBody() {
         BodyDef bodyDef = new MyBodyDef(BodyDef.BodyType.StaticBody, 0, 0);
         PolygonShape box = new PolygonShape();

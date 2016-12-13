@@ -3,8 +3,10 @@ package com.tim.bong.screen;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.FPSLogger;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.utils.Align;
 import com.tim.bong.game.actor.Ball;
 import com.tim.bong.game.actor.PlayerStick;
 import com.tim.bong.game.playercontrol.AiControl;
@@ -13,6 +15,7 @@ import com.tim.bong.game.playercontrol.SensorControl;
 import com.tim.bong.game.playercontrol.TouchControl;
 import com.tim.bong.game.world.GameWorldManager;
 import com.tim.bong.game.world.MyContactListener;
+import com.tim.bong.util.FontHelper;
 
 public class GameScreen extends BasicScreen {
     private SpriteBatch spriteBatch;
@@ -24,6 +27,7 @@ public class GameScreen extends BasicScreen {
 
     private Color goalsColor = new Color(0.886f, 0.043f, 0, 1);
     private Color centerLineColor = new Color(0.5f, 0.5f, 0.5f, 1);
+    private BitmapFont scoreFont;
 
     private boolean touchControl = false;
     private boolean renderDebug = false;
@@ -37,6 +41,8 @@ public class GameScreen extends BasicScreen {
         project = widthPx / w;
 
         worlManager = new GameWorldManager(w, h);
+        scoreFont = FontHelper.getScoreFont(Math.round(15 * project));
+        scoreFont.setColor(centerLineColor);
 
         //player control
         controller = new PlayerController[2];
@@ -70,6 +76,10 @@ public class GameScreen extends BasicScreen {
         controller[1].update(delta);
         worlManager.update(delta);
 
+        spriteBatch.begin();
+        renderScore();
+        spriteBatch.end();
+
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         renderField();
         renderBall();
@@ -86,7 +96,7 @@ public class GameScreen extends BasicScreen {
     }
 
     private void renderField() {
-        float borderThickness = 0.8f * project;
+        float borderThickness = 0.4f * project;
 
         shapeRenderer.setColor(goalsColor);
         shapeRenderer.rectLine(0, 0, widthPx, 0, borderThickness * 2);
@@ -94,6 +104,16 @@ public class GameScreen extends BasicScreen {
 
         shapeRenderer.setColor(centerLineColor);
         shapeRenderer.rectLine(0, heightPx / 2, widthPx, heightPx / 2, borderThickness);
+    }
+
+    private void renderScore() {
+        int scoreA = worlManager.getBottomGoal().getScore();
+        float y = heightPx/5;
+        scoreFont.draw(spriteBatch, "" + scoreA, 0, y, widthPx, Align.center, true);
+
+        int scoreB = worlManager.getTopGoal().getScore();
+        y = heightPx*4/5-scoreFont.getXHeight();
+        scoreFont.draw(spriteBatch, "" + scoreB, 0, y, widthPx, Align.center, true);
     }
 
     private void renderBall() {
