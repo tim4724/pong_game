@@ -87,7 +87,7 @@ public class GameWorldManager {
     }
 
     private void doPhysicsStep(float deltaTime) {
-        world.step(1 / 60f, 6, 2);
+        world.step(deltaTime, 1, 1);
     }
 
     public void renderDebug() {
