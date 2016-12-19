@@ -13,7 +13,7 @@ import com.tim.bong.util.convenience.MyFixtureDef;
 
 public class Ball extends BasicActor implements PublicBall {
     private final static float defaultRadius = 0.8f;
-    private final static float defaultSpeed = 40;
+    private final static float defaultSpeed = 35;
     private final static float maimumSpeed = 60;
 
     private float radius;
@@ -89,6 +89,14 @@ public class Ball extends BasicActor implements PublicBall {
     @Override
     public Vector2 getBallVelocity(Vector2 temp) {
         return temp.set(getBody().getLinearVelocity());
+    }
+
+    public void setBallVelocity(float vX, float vY) {
+        getBody().setLinearVelocity(vX, vY);//TODO: test
+    }
+
+    public void setSpeed(float speed) {
+        this.speed = speed;
     }
 
     @Override

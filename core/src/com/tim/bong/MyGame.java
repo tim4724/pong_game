@@ -3,7 +3,7 @@ package com.tim.bong;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
-import com.tim.bong.screen.GameScreen;
+import com.tim.bong.screen.SettingTestScreen;
 
 public class MyGame extends Game {
 
@@ -15,7 +15,7 @@ public class MyGame extends Game {
     }
 
     private void laodGameScreen() {
-        GameScreen gameScreen = new GameScreen();
-        setScreen(gameScreen);
+        SettingTestScreen startScreen = new SettingTestScreen(this);
+        setScreen(startScreen);
     }
 }

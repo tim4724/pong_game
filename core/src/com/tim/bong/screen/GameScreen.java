@@ -9,12 +9,13 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.Align;
 import com.tim.bong.game.actor.Ball;
 import com.tim.bong.game.actor.PlayerStick;
-import com.tim.bong.game.playercontrol.AiControl;
-import com.tim.bong.game.playercontrol.PlayerController;
-import com.tim.bong.game.playercontrol.SensorControl;
-import com.tim.bong.game.playercontrol.TouchControl;
+import com.tim.bong.game.playercontrol.*;
 import com.tim.bong.game.world.GameWorldManager;
+import com.tim.bong.game.world.GameWorldNetworkManager;
 import com.tim.bong.game.world.MyContactListener;
+import com.tim.bong.network.GameDataExchanger;
+import com.tim.bong.network.PeerConnectorGuest;
+import com.tim.bong.network.PeerConnectorHost;
 import com.tim.bong.util.FontHelper;
 
 public class GameScreen extends BasicScreen {
@@ -24,23 +25,28 @@ public class GameScreen extends BasicScreen {
     private GameWorldManager worlManager;
     private static float project;
     private PlayerController controller[];
+    private GameDataExchanger gameDataExchanger;
 
     private Color goalsColor = new Color(0.886f, 0.043f, 0, 1);
     private Color centerLineColor = new Color(0.5f, 0.5f, 0.5f, 1);
     private BitmapFont scoreFont;
 
-    private boolean touchControl = false;
     private boolean renderDebug = false;
 
-    private FPSLogger fpsLogger = new FPSLogger();
-
-    public GameScreen() {
+    public GameScreen(Integer multiplayerId, boolean touchControl) {
         super(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), new Color(0.03f, 0.03f, 0.03f, 1));
+        boolean online = (multiplayerId != null);
+        touchControl = true;
+
         float w = 30;
         float h = w * (heightPx / widthPx);
         project = widthPx / w;
 
-        worlManager = new GameWorldManager(w, h);
+        if (online) {
+            worlManager = new GameWorldNetworkManager(w, h, multiplayerId);
+        } else {
+            worlManager = new GameWorldManager(w, h);
+        }
         scoreFont = FontHelper.getScoreFont(Math.round(15 * project));
         scoreFont.setColor(centerLineColor);
 
@@ -51,7 +57,19 @@ public class GameScreen extends BasicScreen {
         } else {
             controller[0] = new SensorControl(worlManager.getBottomAnchor(), 100);
         }
-        controller[1] = new AiControl(worlManager.getTopAnchor(), worlManager.getBall(), w, h);
+
+        if (online) {
+            //gameDataExchanger = new GameDataExchanger(multiplayerId, (GameWorldNetworkManager) worlManager);
+            if (multiplayerId > 0) {
+                new PeerConnectorHost(multiplayerId);
+            } else {
+                new PeerConnectorGuest(multiplayerId);
+            }
+            controller[1] = new NetworkControl(worlManager.getTopAnchor());
+            ((GameWorldNetworkManager) worlManager).registerNetworkControl((NetworkControl) controller[1]);
+        } else {
+            controller[1] = new AiControl(worlManager.getTopAnchor(), worlManager.getBall(), w, h);
+        }
 
         //initialize render stuff
         spriteBatch = new SpriteBatch(2);
@@ -74,6 +92,9 @@ public class GameScreen extends BasicScreen {
         super.render(delta);
         controller[0].update(delta);
         controller[1].update(delta);
+        if (gameDataExchanger != null) {
+            gameDataExchanger.sendUpdate();
+        }
         worlManager.update(delta);
 
         spriteBatch.begin();
@@ -89,10 +110,9 @@ public class GameScreen extends BasicScreen {
         renderPlayers();
         spriteBatch.end();
 
-        if(renderDebug) {
+        if (renderDebug) {
             worlManager.renderDebug();
         }
-        fpsLogger.log();
     }
 
     private void renderField() {
@@ -108,11 +128,11 @@ public class GameScreen extends BasicScreen {
 
     private void renderScore() {
         int scoreA = worlManager.getBottomGoal().getScore();
-        float y = heightPx/5;
+        float y = heightPx / 5;
         scoreFont.draw(spriteBatch, "" + scoreA, 0, y, widthPx, Align.center, true);
 
         int scoreB = worlManager.getTopGoal().getScore();
-        y = heightPx*4/5-scoreFont.getXHeight();
+        y = heightPx * 4 / 5 - scoreFont.getXHeight();
         scoreFont.draw(spriteBatch, "" + scoreB, 0, y, widthPx, Align.center, true);
     }
 

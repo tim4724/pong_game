@@ -25,8 +25,8 @@ public class GameWorldManager {
     private StickAnchor bottomAnchor, topAnchor;
 
     private List<UpdatAble> updatAbles;
-    private long timer;
-    private boolean running;
+    long timer;
+    boolean running;
 
     public GameWorldManager(float width, float height) {
         WorldService.createInst(this);
@@ -56,6 +56,7 @@ public class GameWorldManager {
 
     public void start() {
         ball.start();
+        running = true;
     }
 
     public void update(float deltaTime) {
@@ -67,7 +68,6 @@ public class GameWorldManager {
             if(!running) {
                 start();
             }
-            running = true;
         } else {
             if (running) {
                 running = false;
@@ -84,6 +84,9 @@ public class GameWorldManager {
     public void reset() {
         ball.stop();
         timer = System.currentTimeMillis() + 1500;
+    }
+
+    public void onBallStickCollission(PlayerStick p) {
     }
 
     private void doPhysicsStep(float deltaTime) {

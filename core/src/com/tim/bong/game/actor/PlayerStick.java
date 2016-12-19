@@ -82,4 +82,8 @@ public class PlayerStick extends BasicActor {
     public float getAngle() {
         return getBody().getAngle();
     }
+
+    public void setAngle(float angle) {
+        getBody().setTransform(getX(), getY(), angle);
+    }
 }

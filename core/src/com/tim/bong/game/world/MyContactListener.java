@@ -6,6 +6,7 @@ import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.tim.bong.game.actor.Ball;
 import com.tim.bong.game.actor.Goal;
+import com.tim.bong.game.actor.PlayerStick;
 
 public class MyContactListener implements ContactListener {
     private GameWorldManager worldManager;
@@ -27,6 +28,11 @@ public class MyContactListener implements ContactListener {
             return;
         }
 
+        PlayerStick p = playerStickBounced(a, b);
+        if (p != null) {
+            worldManager.onBallStickCollission(p);
+        }
+
         Goal goal = goalScored(a, b);
         if (goal != null) {
             goal.goalScored();
@@ -36,10 +42,20 @@ public class MyContactListener implements ContactListener {
 
     private Goal goalScored(Object a, Object b) {
         if (a instanceof Goal && b instanceof Ball) {
-            return ((Goal) a);
+            return (Goal) a;
         }
         if (a instanceof Ball && b instanceof Goal) {
-            return ((Goal) b);
+            return (Goal) b;
+        }
+        return null;
+    }
+
+    private PlayerStick playerStickBounced(Object a, Object b) {
+        if (a instanceof PlayerStick && b instanceof Ball) {
+            return (PlayerStick) a;
+        }
+        if (a instanceof Ball && b instanceof PlayerStick) {
+            return (PlayerStick) b;
         }
         return null;
     }
