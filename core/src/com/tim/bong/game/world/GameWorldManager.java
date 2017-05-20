@@ -1,5 +1,6 @@
 package com.tim.bong.game.world;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
@@ -13,20 +14,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GameWorldManager {
-
+    //world
     private float width, height;
     private OrthographicCamera worldCamera;
     private World world;
+
     private Box2DDebugRenderer debugRenderer;
     //actors
     private Goal bottomGoal, topGoal;
     private Ball ball;
     private PlayerStick bottomPlayer, topPlayer;
     private StickAnchor bottomAnchor, topAnchor;
-
     private List<UpdatAble> updatAbles;
-    long timer;
-    boolean running;
 
     public GameWorldManager(float width, float height) {
         WorldService.createInst(this);
@@ -50,13 +49,15 @@ public class GameWorldManager {
         topPlayer = new PlayerStick(true);
         bottomAnchor = new StickAnchor(bottomPlayer);
         topAnchor = new StickAnchor(topPlayer);
-
-        timer = -1;
     }
 
-    public void start() {
+    public void show() {
+        startDelayed(2000);
+    }
+
+    public void startGame() {
         ball.start();
-        running = true;
+        System.out.println("start game B");
     }
 
     public void update(float deltaTime) {
@@ -64,16 +65,6 @@ public class GameWorldManager {
             updatAble.preSimUpdate(deltaTime);
         }
 
-        if (timer < System.currentTimeMillis()) {
-            if(!running) {
-                start();
-            }
-        } else {
-            if (running) {
-                running = false;
-                ball.setPos(width / 2, height / 2);
-            }
-        }
         doPhysicsStep(deltaTime);
 
         for (UpdatAble updatAble : updatAbles) {
@@ -82,15 +73,42 @@ public class GameWorldManager {
     }
 
     public void reset() {
-        ball.stop();
-        timer = System.currentTimeMillis() + 1500;
+        resetBallPosition();
+        startDelayed(2000);
+    }
+
+    public void startDelayed(long delay) {
+        System.out.println("start game delayed " + delay);
+        new java.util.Timer().schedule(new java.util.TimerTask() {
+            @Override
+            public void run() {
+                System.out.println("start game A");
+                startGame();
+            }
+        }, delay);
+    }
+
+    public void resetBallPosition() {
+        //do it before the next frame is rendered, because setting the position within the contactlistener doesn't work for any reason
+        Gdx.app.postRunnable(new Runnable() {
+            @Override
+            public void run() {
+                ball.setSpeed(0);
+                ball.setPos(width / 2, height / 2);
+            }
+        });
     }
 
     public void onBallStickCollission(PlayerStick p) {
     }
 
+    public void onBallGoalCollission(Goal g) {
+        reset();
+        g.goalScored();
+    }
+
     private void doPhysicsStep(float deltaTime) {
-        world.step(deltaTime, 1, 1);
+        world.step(deltaTime, 10, 5);
     }
 
     public void renderDebug() {
@@ -156,9 +174,5 @@ public class GameWorldManager {
 
     public World getWorld() {
         return world;
-    }
-
-    public OrthographicCamera getWorldCamera() {
-        return worldCamera;
     }
 }

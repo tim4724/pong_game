@@ -35,8 +35,7 @@ public class MyContactListener implements ContactListener {
 
         Goal goal = goalScored(a, b);
         if (goal != null) {
-            goal.goalScored();
-            worldManager.reset();
+            worldManager.onBallGoalCollission(goal);
         }
     }
 

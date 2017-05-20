@@ -7,7 +7,9 @@ public interface PublicBall {
 
     float getY();
 
-    Vector2 getBallVelocity(Vector2 temp);
+    float getVelX();
+
+    float getVelY();
 
     float getSpeed();
 }

@@ -1,99 +1,142 @@
 package com.tim.bong.game.world;
 
-import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.Gdx;
+import com.tim.bong.game.actor.Goal;
 import com.tim.bong.game.actor.PlayerStick;
+import com.tim.bong.game.actor.PublicBall;
 import com.tim.bong.game.playercontrol.NetworkControl;
-import com.tim.bong.network.Frame;
-import com.tim.bong.util.ByteStuff;
-import com.tim.bong.util.MathUtils2;
+import com.tim.bong.network.GameDataExchanger;
+
+import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
 
 public class GameWorldNetworkManager extends GameWorldManager {
 
-    private NetworkControl networkControl;
     private boolean host;
-    private int gameState;
+    private NetworkControl networkPlayerControl;
+    private GameDataExchanger gameDataExchanger;
+    private boolean connectionLost;
+    private boolean ballMovingAwayFromMe;
+    private int version, gameState;
+    private boolean initialStart;
 
-    public GameWorldNetworkManager(float width, float height, int id) {
+    public GameWorldNetworkManager(float width, float height) {
         super(width, height);
-        this.host = (id > 0);
-        gameState = 0;
+        connectionLost = false;
     }
 
-    //override start because we need to wait for the network connection
-    @Override
-    public void start() {
-        //do nothing
+    public void init(DatagramSocket socketToUse, InetSocketAddress target, int myId, int opponnentId) {
+        gameDataExchanger = new GameDataExchanger(this, socketToUse, target, myId, opponnentId);
+        host = myId > opponnentId;
     }
 
     @Override
-    public void reset() {
-        getBall().stop();
-        timer = System.currentTimeMillis() + 1500;
-        System.out.println("game resetted");
+    public void show() {
+        //not start the game!! - just do nothing
     }
 
-    public void newData(byte[] data) {
-        //always update the other player stick
-        float playerX = ByteStuff.readFloat(data, Frame.playerXIndex);
-        networkControl.newData(playerX);
-        updateStickAngle(data);
+    @Override
+    public void startGame() {
+        super.startGame();
+        gameState++;
+    }
 
-        if (host && timer > System.currentTimeMillis()) {
-            return;
-        }
+    @Override
+    public void update(float deltaTime) {
+        //simulate game
+        super.update(deltaTime);
 
-        // game not started
-        if (!running) {
-            if (host) {
-                // we received data -> the connection seems to work -> start the game
-                gameState++;
-                System.out.println("start game");
-                super.start();
+        int newVersion = gameDataExchanger.getStats().getLastReceivedId();
+        int newGameState = gameDataExchanger.getRemoteGameState();
+        if (newVersion > version && newGameState >= gameState) {
+            networkPlayerControl.updateStickPosition(gameDataExchanger.getRemotePlayerX());
+            PublicBall remoteBall = gameDataExchanger.getRemoteBall();
+
+            if (ballMovingAwayFromMe || newGameState > gameState) {
+                boolean smooth = getBall().getSpeed() != 0;
+                adjustBallPosition(smooth, remoteBall.getX(), remoteBall.getY());
+
+                getBall().setBallVelocity(remoteBall.getVelX(), remoteBall.getVelY());
+                getBall().setSpeed(remoteBall.getSpeed());
             }
-        }
+            ballMovingAwayFromMe = remoteBall.getVelY() < 0;
 
-        int newGameState = ByteStuff.readInt(data, Frame.gameStateIndex);
-        if (gameState < newGameState) {
-            System.out.println("Gamestate changed");
-            running = true;
-            //something dramatic happened
-            updateBall(data);
-            //updateStickAngle(data);
+            version = newVersion;
             gameState = newGameState;
         }
+
+        if (gameDataExchanger.getRemoteScore() > getTopGoal().getScore()) {
+            getTopGoal().goalScored();
+            resetBallPosition();
+        }
+
+
+        gameDataExchanger.update(getBottomPlayer(), getBall(), getBottomGoal(), gameState);
+    }
+
+    private void adjustBallPosition(boolean smooth, float targetX, float targetY) {
+        if (!smooth) {
+            getBall().setPos(targetX, targetY);
+        } else {
+            float dif2 = (targetX - getBall().getX()) * (targetX - getBall().getX()) + (targetY - getBall().getY()) * (targetY - getBall().getY());
+            System.out.println("dif: " + Math.sqrt(dif2));
+            float deltaX = (targetX - getBall().getX());
+            float deltaY = (targetY - getBall().getY());
+            float newX = getBall().getX() + deltaX * 0.1f;
+            float newY = getBall().getY() + deltaY * 0.1f;
+
+            getBall().setPos(newX, newY);
+        }
+    }
+
+    public void connectionLost() {
+        Gdx.app.debug("GameWorldNetwork", "Connection lost; pause the game");
+        connectionLost = true;
+        if (host) {
+            gameState = gameState + 2;
+        } else {
+            gameState++;
+        }
+        getBall().setSpeed(0);
+    }
+
+    public void connected() {
+        Gdx.app.debug("GameWorldNetwork", "Opponnent is ready");
+        if (host) {
+            if (!initialStart) {
+                startDelayed(2000);
+                initialStart = true;
+            }
+        }
+        //the connection is not lost
+        connectionLost = false;
     }
 
     @Override
     public void onBallStickCollission(PlayerStick p) {
-        //ball collided with the own stick -> increment game state
-        if (p.getY() > getHeight() / 2) {
+        if (getBottomPlayer() == p) {
             gameState++;
         }
     }
 
-    private void updateBall(byte[] data) {
-        float ballX = ByteStuff.readFloat(data, Frame.ballXIndex);
-        float ballY = ByteStuff.readFloat(data, Frame.ballYIndex);
-        ballY = super.getHeight() / 2 + (super.getHeight() / 2 - ballY);//mirror the y position
-        float ballVelocityX = ByteStuff.readFloat(data, Frame.ballVelocityXIndex);
-        float ballVelocityY = -ByteStuff.readFloat(data, Frame.ballVelocityYIndex);
-        float ballSpeed = ByteStuff.readFloat(data, Frame.ballSpeedIndex);
+    @Override
+    public void onBallGoalCollission(Goal g) {
+        getBall().setSpeed(0);
+        getBall().setBallVelocity(0, 0);
 
-        getBall().setPos(ballX, ballY);
-        getBall().setBallVelocity(ballVelocityX, ballVelocityY);
-        getBall().setSpeed(ballSpeed);
-    }
-
-    private void updateStickAngle(byte[] data) {
-        float stickAngle = -ByteStuff.readFloat(data, Frame.playerAngleIndex);
-        getTopPlayer().setAngle(stickAngle);
+        if (g == getBottomGoal()) {
+            g.goalScored();
+            resetBallPosition();
+            startDelayed(2000);
+            gameState++;
+        }
     }
 
     public void registerNetworkControl(NetworkControl networkControl) {
-        this.networkControl = networkControl;
+        this.networkPlayerControl = networkControl;
     }
 
-    public int getGameState() {
-        return gameState;
+    public GameDataExchanger.Stats getStats() {
+        return gameDataExchanger.getStats();
     }
 }

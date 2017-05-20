@@ -2,7 +2,6 @@ package com.tim.bong.screen;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -14,9 +13,10 @@ import com.tim.bong.game.world.GameWorldManager;
 import com.tim.bong.game.world.GameWorldNetworkManager;
 import com.tim.bong.game.world.MyContactListener;
 import com.tim.bong.network.GameDataExchanger;
-import com.tim.bong.network.PeerConnectorGuest;
-import com.tim.bong.network.PeerConnectorHost;
 import com.tim.bong.util.FontHelper;
+
+import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
 
 public class GameScreen extends BasicScreen {
     private SpriteBatch spriteBatch;
@@ -25,51 +25,47 @@ public class GameScreen extends BasicScreen {
     private GameWorldManager worlManager;
     private static float project;
     private PlayerController controller[];
-    private GameDataExchanger gameDataExchanger;
 
     private Color goalsColor = new Color(0.886f, 0.043f, 0, 1);
     private Color centerLineColor = new Color(0.5f, 0.5f, 0.5f, 1);
-    private BitmapFont scoreFont;
+    private BitmapFont scoreFont, font;
+
+    private boolean online;
 
     private boolean renderDebug = false;
+    private GameDataExchanger.Stats stats;
 
-    public GameScreen(Integer multiplayerId, boolean touchControl) {
+    public GameScreen(boolean online, boolean touchControl) {
         super(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), new Color(0.03f, 0.03f, 0.03f, 1));
-        boolean online = (multiplayerId != null);
-        touchControl = true;
+        this.online = online;
 
         float w = 30;
         float h = w * (heightPx / widthPx);
         project = widthPx / w;
 
         if (online) {
-            worlManager = new GameWorldNetworkManager(w, h, multiplayerId);
+            worlManager = new GameWorldNetworkManager(w, h);
         } else {
             worlManager = new GameWorldManager(w, h);
         }
-        scoreFont = FontHelper.getScoreFont(Math.round(15 * project));
-        scoreFont.setColor(centerLineColor);
 
-        //player control
         controller = new PlayerController[2];
         if (touchControl) {
             controller[0] = new TouchControl(worlManager.getBottomAnchor(), widthPx, w);
         } else {
             controller[0] = new SensorControl(worlManager.getBottomAnchor(), 100);
         }
-
         if (online) {
-            //gameDataExchanger = new GameDataExchanger(multiplayerId, (GameWorldNetworkManager) worlManager);
-            if (multiplayerId > 0) {
-                new PeerConnectorHost(multiplayerId);
-            } else {
-                new PeerConnectorGuest(multiplayerId);
-            }
-            controller[1] = new NetworkControl(worlManager.getTopAnchor());
+            controller[1] = new NetworkControl(worlManager.getTopAnchor(), worlManager.getTopPlayer());
             ((GameWorldNetworkManager) worlManager).registerNetworkControl((NetworkControl) controller[1]);
         } else {
             controller[1] = new AiControl(worlManager.getTopAnchor(), worlManager.getBall(), w, h);
         }
+
+        scoreFont = FontHelper.getScoreFont(Math.round(15 * project));
+        scoreFont.setColor(centerLineColor);
+        font = FontHelper.getFont(Math.round(1.5f * project));
+        font.setColor(Color.GREEN);
 
         //initialize render stuff
         spriteBatch = new SpriteBatch(2);
@@ -80,11 +76,16 @@ public class GameScreen extends BasicScreen {
         shapeRenderer.setProjectionMatrix(camera.combined);
     }
 
+    public void init(DatagramSocket socket, InetSocketAddress target, Integer multiplayerId, Integer opponnentId) {
+        ((GameWorldNetworkManager) worlManager).init(socket, target, multiplayerId, opponnentId);
+    }
+
     @Override
     public void show() {
         super.show();
         worlManager.getWorld().setContactListener(new MyContactListener(worlManager));
-        worlManager.start();
+        worlManager.show();
+        stats = ((GameWorldNetworkManager) worlManager).getStats();
     }
 
     @Override
@@ -92,9 +93,6 @@ public class GameScreen extends BasicScreen {
         super.render(delta);
         controller[0].update(delta);
         controller[1].update(delta);
-        if (gameDataExchanger != null) {
-            gameDataExchanger.sendUpdate();
-        }
         worlManager.update(delta);
 
         spriteBatch.begin();
@@ -108,6 +106,13 @@ public class GameScreen extends BasicScreen {
 
         spriteBatch.begin();
         renderPlayers();
+
+        if (online) {
+            String s = "cur Ping: " + stats.getRtt()
+                    + "\nReceived: " + stats.getPacketsReceived() + "/" + (stats.getPacketsReceived() + stats.getPacketsDropped())
+                    + "\nSent: " + stats.getPacketsSent();
+            font.draw(spriteBatch, s, 0, (7f * project), (int) (widthPx - Math.round(0.5f * project)), Align.right, true);
+        }
         spriteBatch.end();
 
         if (renderDebug) {

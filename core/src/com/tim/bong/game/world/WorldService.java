@@ -4,6 +4,7 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Joint;
 import com.badlogic.gdx.physics.box2d.JointDef;
+import com.tim.bong.game.actor.PlayerStick;
 
 public class WorldService {
     private static WorldService inst;
@@ -42,5 +43,4 @@ public class WorldService {
     public float getHeight() {
         return worldManager.getHeight();
     }
-
 }

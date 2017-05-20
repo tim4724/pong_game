@@ -1,28 +1,31 @@
 package com.tim.bong.game.playercontrol;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputAdapter;
 import com.tim.bong.game.actor.StickAnchor;
 
 public class TouchControl extends PlayerController {
     private float projectX;
+    private float x;
 
     public TouchControl(StickAnchor anchor, float widthPx, float width) {
         super(anchor);
         projectX = (width / widthPx);
-        //Gdx.input.setInputProcessor(inputAdapter);
+        Gdx.input.setInputProcessor(inputAdapter);
     }
 
     @Override
     public void update(float deltaT) {
         super.update(deltaT);
 
+        /*
         if (Gdx.input.isTouched(0)) {
             float x = Gdx.input.getX(0) * projectX;
             anchor.updatePos(x);
-        }
+        }*/
     }
 
-    /*
+
     private final InputAdapter inputAdapter = new InputAdapter() {
         private boolean touchEvent(float screenX, int pointer) {
             if (pointer == 0) {
@@ -46,5 +49,5 @@ public class TouchControl extends PlayerController {
         public boolean touchUp(int screenX, int screenY, int pointer, int button) {
             return touchEvent(screenX, pointer);
         }
-    };*/
+    };
 }

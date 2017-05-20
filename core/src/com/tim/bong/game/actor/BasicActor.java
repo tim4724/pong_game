@@ -41,7 +41,6 @@ public abstract class BasicActor implements UpdatAble {
         return body.getPosition();
     }
 
-
     @Override
     public void preSimUpdate(float delta) {
     }

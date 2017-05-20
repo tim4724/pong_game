@@ -1,8 +1,6 @@
 package com.tim.bong.game.actor;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -19,7 +17,6 @@ public class Ball extends BasicActor implements PublicBall {
     private float radius;
     private float a;
     private float speed;
-    private boolean active;
     private Color color;
 
     public Ball() {
@@ -28,6 +25,7 @@ public class Ball extends BasicActor implements PublicBall {
         speed = defaultSpeed;
         a = 1.005f;
         setBody(createBallBody(radius));
+        setPos(worldService.getWidth() / 2, worldService.getHeight() / 2);
         worldService.registerUpdatable(this);
         color = new Color(0.145f, 0.168f, 1f, 1f);
     }
@@ -36,23 +34,11 @@ public class Ball extends BasicActor implements PublicBall {
         setPos(worldService.getWidth() / 2, worldService.getHeight() / 2);
 
         speed = defaultSpeed;
-        int vY = MathUtils.random(0, 1) == 0 ? 1 : -1;
-        Vector2 v = getBody().getLinearVelocity().set(0, vY).setLength(speed);
+        Vector2 v = getBody().getLinearVelocity().set(0, 1).setLength(speed);
         getBody().applyLinearImpulse(v, getPos(), true);
-        active = true;
-    }
-
-    public void stop() {
-        speed = 0;
-        active = false;
     }
 
     public void preSimUpdate(float delta) {
-        if (active) {
-            speed += a * delta;
-            speed = Math.min(speed, maimumSpeed);
-            Gdx.app.debug("Ball", "speed: " + speed);
-        }
         correctSpeed();
     }
 
@@ -87,8 +73,13 @@ public class Ball extends BasicActor implements PublicBall {
     }
 
     @Override
-    public Vector2 getBallVelocity(Vector2 temp) {
-        return temp.set(getBody().getLinearVelocity());
+    public float getVelX() {
+        return getBody().getLinearVelocity().x;
+    }
+
+    @Override
+    public float getVelY() {
+        return getBody().getLinearVelocity().y;
     }
 
     public void setBallVelocity(float vX, float vY) {
